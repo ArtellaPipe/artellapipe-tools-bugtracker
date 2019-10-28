@@ -69,7 +69,7 @@ class ArtellaBugTracker(tool.Tool):
         self._departments_combo = QComboBox()
         self._departments_combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
-        top_layout.setColumnStretch( 1, 1)
+        top_layout.setColumnStretch(1, 1)
         top_layout.addWidget(type_lbl, 0, 0)
         top_layout.addWidget(self._types_combo, 0, 1)
         top_layout.addWidget(tool_lbl, 1, 0)
@@ -301,7 +301,7 @@ class BugWidget(base.BaseWidget, object):
                 return "%sB" % n
 
             def get_usage_and_free_percentages(total, used, free):
-                return str(round((used/total)*100, 2)), str(round((free/total)*100, 2))
+                return str(round((used / total) * 100, 2)), str(round((free / total) * 100, 2))
 
             if hasattr(os, 'statvfs'):  # POSIX
                 def disk_usage(path):
@@ -312,9 +312,9 @@ class BugWidget(base.BaseWidget, object):
                     return _ntuple_diskusage(total, used, free)
             elif os.name == 'nt':  # Windows
                 import ctypes
+
                 def disk_usage(path):
-                    _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), \
-                                     ctypes.c_ulonglong()
+                    _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), ctypes.c_ulonglong()
                     if sys.version_info >= (3,) or isinstance(path, unicode):
                         fun = ctypes.windll.kernel32.GetDiskFreeSpaceExW
                     else:
@@ -408,9 +408,9 @@ class BugWidget(base.BaseWidget, object):
             data_lbl.setToolTip(data_text)
             data_lbl.setStatusTip(data_text)
             data_lbl.setStyleSheet('background-color: rgba(45, 85, 45, 50);')
-            self._bug_data_layout.setColumnStretch(column+1, 1)
+            self._bug_data_layout.setColumnStretch(column + 1, 1)
             self._bug_data_layout.addWidget(title_lbl, row, column)
-            self._bug_data_layout.addWidget(data_lbl, row, column+1)
+            self._bug_data_layout.addWidget(data_lbl, row, column + 1)
 
         def _add_drives_info(row, column):
             drives = bug_data.get('drives')
@@ -460,8 +460,8 @@ class BugWidget(base.BaseWidget, object):
                 title_lbl.setStyleSheet('font-weight: bold')
                 title_lbl.setAlignment(Qt.AlignRight)
                 data_text = '{} of {} ({}%)'.format(
-                    str(round((gpus[gpu_id]['memoryUsed']/1000), 2))+'GB',
-                    str(round((gpus[gpu_id]['memoryTotal']/1000), 2))+'GB',
+                    str(round((gpus[gpu_id]['memoryUsed'] / 1000), 2)) + 'GB',
+                    str(round((gpus[gpu_id]['memoryTotal'] / 1000), 2)) + 'GB',
                     str(round(float(gpus[gpu_id]['memoryUtil']) * 100, 2)))
                 data_lbl = QLabel(data_text)
                 data_lbl.setToolTip(data_text)
@@ -608,7 +608,7 @@ class BugWidget(base.BaseWidget, object):
         if not tool_name or not department:
             LOGGER.warning(
                 'Impossible to send request because tool name ({}) or department are not valid ({})'.format(
-                tool_name, department))
+                    tool_name, department))
             return False
 
         msg = '[{}][Bug][{}]({}) - {}'.format(project_name, tool_name, user, title)
@@ -760,7 +760,7 @@ class RequestWidget(base.BaseWidget, object):
         if not tool_name or not department:
             LOGGER.warning(
                 'Impossible to send request because tool name ({}) or department are not valid ({})'.format(
-                tool_name, department))
+                    tool_name, department))
             return False
 
         msg = '[{}][Request][{}]({}) - {}'.format(project_name, tool_name, user, title)
