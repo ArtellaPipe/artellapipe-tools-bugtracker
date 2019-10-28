@@ -1,6 +1,13 @@
 artellapipe.tools.bugtracker package
 ====================================
 
+Submodules
+----------
+
+.. toctree::
+
+   artellapipe.tools.bugtracker.bugtracker
+
 Module contents
 ---------------
 
