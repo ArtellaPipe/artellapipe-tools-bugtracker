@@ -7,7 +7,7 @@ Module that contains tests for artellapipe-tools-bugtracker
 
 import pytest
 
-from artellapipe.launcher import __version__
+from artellapipe.tools.bugtracker import __version__
 
 
 def test_version():
