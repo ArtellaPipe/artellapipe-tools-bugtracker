@@ -652,13 +652,13 @@ class BugWidget(base.BaseWidget, object):
         except ImportError as exc:
             self._send_email_bug()
             LOGGER.info('Bug send through email successfully!')
-            self._main.close_tool()
+            self._main.close_tool_attacher()
             return
 
         self._send_sentry_bug()
         LOGGER.info('Bug send successfully!')
 
-        self._main.close_tool()
+        self._main.close_tool_attacher()
 
 
 class RequestWidget(base.BaseWidget, object):
@@ -844,9 +844,9 @@ class RequestWidget(base.BaseWidget, object):
         except ImportError as exc:
             self._send_email_request()
             LOGGER.info('Request send through email successfully!')
-            self._main.close_tool()
+            self._main.close_tool_attacher()
             return
 
         self._send_sentry_request()
         LOGGER.info('Request send successfully!')
-        self._main.close_tool()
+        self._main.close_tool_attacher()
