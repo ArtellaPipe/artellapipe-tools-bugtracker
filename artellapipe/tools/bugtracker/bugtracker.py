@@ -30,6 +30,7 @@ except ImportError:
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
+import tpDccLib as tp
 from tpPyUtils import osplatform
 from tpQtLib.widgets import splitters, stack
 from tpQtLib.core import base, qtutils
@@ -104,7 +105,8 @@ class ArtellaBugTracker(tool.Tool):
         data = {
             'department': self._departments_combo.currentText(),
             'tool': {
-                'name': self._tools_combo.currentText(),
+                'name': self._tools_combo.currentData().get('name'),
+                'version': self._tools_combo.currentData().get('version'),
                 'data': self._tools_combo.currentData()
             }
         }
@@ -149,6 +151,9 @@ class ArtellaBugTracker(tool.Tool):
             if not tool_name:
                 continue
             tool_icon_name = tool_info.get('icon', None)
+            tool_version = tool_info.get('version', None)
+            if tool_version:
+                tool_name = '{} - {}'.format(tool_name, tool_version)
             if tool_icon_name:
                 tool_icon = resource.ResourceManager().icon(tool_icon_name)
                 self._tools_combo.addItem(tool_icon, tool_name, userData=tool_info)
@@ -202,7 +207,7 @@ class BugWidget(base.BaseWidget, object):
         steps_lbl = QLabel(txt_msg)
         if qtutils.is_pyside2():
             self._steps_area.setPlaceholderText(txt_msg)
-        self._steps_area.setMinimumHeight(100)
+        self._steps_area.setMinimumHeight(350)
 
         self._send_btn = QPushButton('Send Bug')
         self._send_btn.setIcon(resource.ResourceManager().icon('bug'))
@@ -369,9 +374,11 @@ class BugWidget(base.BaseWidget, object):
             'OSVersion': platform.platform(),
             'processor': platform.processor(),
             'machineType': platform.machine(),
-            # 'env': os.environ,
-            # 'syspaths': sys.path,
+            'env': os.environ,
+            'syspaths': sys.path,
             'executable': sys.executable,
+            'dcc_name': tp.Dcc.get_name(),
+            'dcc_version': tp.Dcc.get_version()
         }
 
         return bug_data
@@ -481,11 +488,12 @@ class BugWidget(base.BaseWidget, object):
         _add_info('Python Version', 'friendlyPythonVersion', 5, 0)
         _add_drives_info(6, 0)
 
-        _add_info('CPU Cores', 'Count', 0, 2)
-        _add_info('CPU Bits', 'Bits', 1, 2)
-        _add_info('CPU Vendor', 'Brand', 2, 2)
-
-        _add_gpu_info(3, 2)
+        _add_info('DCC Name', 'dcc_name', 0, 2)
+        _add_info('DCC Version', 'dcc_version', 1, 2)
+        _add_info('CPU Cores', 'Count', 2, 2)
+        _add_info('CPU Bits', 'Bits', 3, 2)
+        _add_info('CPU Vendor', 'Brand', 4, 2)
+        _add_gpu_info(5, 2)
 
         self._bug_data = bug_data
 
@@ -508,6 +516,7 @@ class BugWidget(base.BaseWidget, object):
             return False
 
         tool_name = current_data.get('tool', {}).get('name', None)
+        tool_version = current_data.get('tool', {}).get('version', 'unknown')
         department = current_data.get('department', None)
         steps = self._steps_area.toPlainText()
         user = str(osplatform.get_user())
@@ -519,12 +528,18 @@ class BugWidget(base.BaseWidget, object):
         os_processor = platform.processor()
         os_machine = platform.machine()
         executable = sys.executable
+        dcc_name = tp.Dcc.get_name()
+        dcc_version = tp.Dcc.get_version()
 
         msg = self._trace_text.toPlainText()
         msg += '\n----------------------------\n'
         msg += 'User: {}\n'.format(user)
         msg += 'Time: {}\n'.format(current_time)
+        msg += 'Tool: {}\n'.format(tool_name)
+        msg += 'Version: {}\n'.format(tool_version)
         msg += 'Project: {}\n'.format(project_name)
+        msg += 'DCC Name: {}\n'.format(dcc_name)
+        msg += 'DCC Version: {}\n'.format(dcc_version)
         msg += 'Department: {}\n'.format(department)
         msg += 'Computer Name: {}\n'.format(node)
         msg += 'Platform Release: {}\n'.format(os_release)
@@ -567,6 +582,7 @@ class BugWidget(base.BaseWidget, object):
             return False
 
         tool_name = current_data.get('tool', {}).get('name', None)
+        tool_version = current_data.get('tool', {}).get('version', 'unknown')
         if not tool_name:
             LOGGER.warning('Impossible to send bug because tool name ({}) is not valid ({})'.format(tool_name))
             return False
@@ -604,6 +620,8 @@ class BugWidget(base.BaseWidget, object):
         steps = self._steps_area.toPlainText()
         user = str(osplatform.get_user())
         title = self._title_line.text()
+        dcc_name = tp.Dcc.get_name()
+        dcc_version = tp.Dcc.get_version()
 
         if not tool_name or not department:
             LOGGER.warning(
@@ -619,12 +637,17 @@ class BugWidget(base.BaseWidget, object):
             scope.set_tag('type', 'bug')
             scope.set_tag('project', project_name)
             scope.set_tag('department', department)
+            scope.set_tag('dcc', dcc_name)
+            scope.set_tag('dcc_version', dcc_version)
+            scope.set_tag('version', tool_version)
             scope.set_tag('tool', tool_name)
             scope.set_extra('project', project_name)
             scope.set_extra('department', department)
             scope.set_extra('tool', tool_name)
+            scope.set_extra('version', tool_version)
             scope.set_extra('steps', steps)
             scope.set_extra('trace', self._trace_text.toPlainText())
+            scope.set_extra('dcc_data', {'name': dcc_name, 'version': dcc_version})
 
             os_data, cpu_data, gpu_data, disk_data = self._get_bug_data_for_sentry()
             if os_data:
@@ -719,6 +742,7 @@ class RequestWidget(base.BaseWidget, object):
             return False
 
         tool_name = current_data.get('tool', {}).get('name', None)
+        tool_version = current_data.get('tool', {}).get('version', 'unknown')
         if not tool_name:
             LOGGER.warning('Impossible to send request because tool name ({}) is not valid ({})'.format(tool_name))
             return False
@@ -756,6 +780,8 @@ class RequestWidget(base.BaseWidget, object):
         request = self._request_area.toPlainText()
         user = str(osplatform.get_user())
         title = self._title_line.text()
+        dcc_name = tp.Dcc.get_name()
+        dcc_version = tp.Dcc.get_version()
 
         if not tool_name or not department:
             LOGGER.warning(
@@ -770,13 +796,18 @@ class RequestWidget(base.BaseWidget, object):
             scope.level = 'info'
             scope.set_tag('type', 'request')
             scope.set_tag('project', project_name)
+            scope.set_tag('dcc', dcc_name)
+            scope.set_tag('dcc_version', dcc_version)
+            scope.set_tag('version', tool_version)
+            scope.set_tag('tool', tool_name)
             scope.set_tag('department', department)
             scope.set_tag('tool', tool_name)
             scope.set_extra('project', project_name)
             scope.set_extra('department', department)
             scope.set_extra('tool', tool_name)
+            scope.set_extra('version', tool_version)
             scope.set_extra('request', request)
-
+            scope.set_extra('dcc_data', {'name': tp.Dcc.get_name(), 'version': tp.Dcc.get_version()})
             capture_message(msg)
 
         sentry_sdk.init(bugtracker_sentry_id)
@@ -801,6 +832,7 @@ class RequestWidget(base.BaseWidget, object):
             return False
 
         tool_name = current_data.get('tool', {}).get('name', None)
+        tool_version = current_data.get('tool', {}).get('version', 'unknown')
         department = current_data.get('department', None)
         request = self._request_area.toPlainText()
         user = str(osplatform.get_user())
@@ -812,11 +844,17 @@ class RequestWidget(base.BaseWidget, object):
         os_processor = platform.processor()
         os_machine = platform.machine()
         executable = sys.executable
+        dcc_name = tp.Dcc.get_name()
+        dcc_version = tp.Dcc.get_version()
 
         msg = ''
         msg += 'User: {}\n'.format(user)
         msg += 'Time: {}\n'.format(current_time)
+        msg += 'Tool: {}\n'.format(tool_name)
+        msg += 'Version: {}\n'.format(tool_version)
         msg += 'Project: {}\n'.format(project_name)
+        msg += 'DCC Name: {}\n'.format(dcc_name)
+        msg += 'DCC Version: {}\n'.format(dcc_version)
         msg += 'Department: {}\n'.format(department)
         msg += 'Computer Name: {}\n'.format(node)
         msg += 'Platform Release: {}\n'.format(os_release)
