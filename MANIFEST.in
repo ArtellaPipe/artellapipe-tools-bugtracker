@@ -1,2 +1,2 @@
-include source/artellapipe/tools/bugtracker/__logging__.ini
-include source/artellapipe/tools/bugtracker/resources/images/*.*
+include artellapipe/tools/bugtracker/__logging__.ini
+include artellapipe/tools/bugtracker/resources/images/*.*
