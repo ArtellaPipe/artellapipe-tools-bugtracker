@@ -35,13 +35,14 @@ from tpPyUtils import osplatform
 from tpQtLib.widgets import splitters, stack
 from tpQtLib.core import base, qtutils
 
+import artellapipe
 from artellapipe.utils import resource
 from artellapipe.core import tool
 
 LOGGER = logging.getLogger()
 
 
-class ArtellaBugTracker(tool.Tool):
+class ArtellaBugTracker(artellapipe.Tool):
 
     BUG_TYPES = ['Bug', 'Request']
     ATTACHER_TYPE = tool.ToolAttacher.Dialog
@@ -132,7 +133,7 @@ class ArtellaBugTracker(tool.Tool):
             else:
                 tool_name = self._tool.config.data.get('name', None)
                 if tool_name:
-                    tool_info = tool.ToolsManager().get_tool_data_from_tool(self._tool, as_dict=True)
+                    tool_info = artellapipe.ToolsMgr().get_tool_data_from_tool(self._tool, as_dict=True)
                     if tool_info:
                         valid_tool = True
                     else:
@@ -144,7 +145,7 @@ class ArtellaBugTracker(tool.Tool):
         if valid_tool and tool_info:
             all_tools = tool_info
         else:
-            all_tools = tool.ToolsManager().tools
+            all_tools = artellapipe.ToolsMgr().tools
 
         for tool_id, tool_info in all_tools.items():
             tool_name = tool_info.get('name', None)
@@ -596,7 +597,7 @@ class BugWidget(base.BaseWidget, object):
         if self._main.has_tool():
             sentry_id = self._main.tool.config.data.get('sentry_id', None)
         else:
-            tool_data = tool.ToolsManager().get_tool_data_from_name(tool_name)
+            tool_data = artellapipe.ToolsMgr().get_tool_data_from_name(tool_name)
             if not tool_data:
                 LOGGER.warning('No data found for tool: "{}"'.format(tool_name))
                 return False
@@ -756,7 +757,7 @@ class RequestWidget(base.BaseWidget, object):
         if self._main.has_tool():
             sentry_id = self._main.tool.config.data.get('sentry_id', None)
         else:
-            tool_data = tool.ToolsManager().get_tool_data_from_name(tool_name)
+            tool_data = artellapipe.ToolsMgr().get_tool_data_from_name(tool_name)
             if not tool_data:
                 LOGGER.warning('No data found for tool: "{}"'.format(tool_name))
                 return False
