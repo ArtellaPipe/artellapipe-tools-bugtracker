@@ -30,32 +30,31 @@ except ImportError:
 from Qt.QtCore import *
 from Qt.QtWidgets import *
 
-import tpDccLib as tp
-from tpPyUtils import osplatform
-from tpQtLib.widgets import splitters, stack
-from tpQtLib.core import base, qtutils
+import tpDcc as tp
+from tpDcc.libs.python import osplatform
+from tpDcc.libs.qt.widgets import splitters, stack
+from tpDcc.libs.qt.core import base, qtutils
 
 import artellapipe
-from artellapipe.utils import resource
 from artellapipe.core import tool
 
 LOGGER = logging.getLogger()
 
 
-class ArtellaBugTracker(artellapipe.Tool):
+class ArtellaBugTracker(artellapipe.ToolWidget):
 
     BUG_TYPES = ['Bug', 'Request']
     ATTACHER_TYPE = tool.ToolAttacher.Dialog
     CPU_INFO = None
     GPU_INFO = None
 
-    def __init__(self, project, config, tool=None, traceback=None):
+    def __init__(self, project, config, settings, parent, tool=None, traceback=None):
 
         self._tool = tool
         self._trace = traceback
         self._bug_data = dict()
 
-        super(ArtellaBugTracker, self).__init__(project=project, config=config)
+        super(ArtellaBugTracker, self).__init__(project=project, config=config, settings=settings, parent=parent)
 
     def ui(self):
         super(ArtellaBugTracker, self).ui()
@@ -108,7 +107,8 @@ class ArtellaBugTracker(artellapipe.Tool):
             'tool': {
                 'name': self._tools_combo.currentData().get('name'),
                 'version': self._tools_combo.currentData().get('version'),
-                'data': self._tools_combo.currentData()
+                'config': self._tools_combo.currentData().get('config'),
+                'data': self._tools_combo.currentData(),
             }
         }
 
@@ -145,7 +145,10 @@ class ArtellaBugTracker(artellapipe.Tool):
         if valid_tool and tool_info:
             all_tools = tool_info
         else:
-            all_tools = artellapipe.ToolsMgr().tools
+            all_tools = dict()
+            for package_name in ['artellapipe', artellapipe.project.get_clean_name()]:
+                package_tools = tp.ToolsMgr().get_package_tools(package_name) or list()
+                all_tools.update(package_tools)
 
         for tool_id, tool_info in all_tools.items():
             tool_name = tool_info.get('name', None)
@@ -156,7 +159,7 @@ class ArtellaBugTracker(artellapipe.Tool):
             if tool_version:
                 tool_name = '{} - {}'.format(tool_name, tool_version)
             if tool_icon_name:
-                tool_icon = resource.ResourceManager().icon(tool_icon_name)
+                tool_icon = tp.ResourcesMgr().icon(tool_icon_name)
                 self._tools_combo.addItem(tool_icon, tool_name, userData=tool_info)
             else:
                 self._tools_combo.addItem(tool_name, userData=tool_info)
@@ -211,7 +214,7 @@ class BugWidget(base.BaseWidget, object):
         self._steps_area.setMinimumHeight(350)
 
         self._send_btn = QPushButton('Send Bug')
-        self._send_btn.setIcon(resource.ResourceManager().icon('bug'))
+        self._send_btn.setIcon(tp.ResourcesMgr().icon('bug'))
         self._send_btn.setEnabled(False)
 
         self.main_layout.addWidget(splitters.Splitter('Bug Data'))
@@ -597,11 +600,7 @@ class BugWidget(base.BaseWidget, object):
         if self._main.has_tool():
             sentry_id = self._main.tool.config.data.get('sentry_id', None)
         else:
-            tool_data = artellapipe.ToolsMgr().get_tool_data_from_name(tool_name)
-            if not tool_data:
-                LOGGER.warning('No data found for tool: "{}"'.format(tool_name))
-                return False
-            tool_config = tool_data.get('config', None)
+            tool_config = current_data.get('tool', {}).get('config', None)
             if tool_config and hasattr(tool_config, 'data'):
                 sentry_id = tool_config.data.get('sentry_id', None)
 
@@ -706,7 +705,7 @@ class RequestWidget(base.BaseWidget, object):
         self._request_area.setMinimumHeight(100)
 
         self._send_btn = QPushButton('Send Request')
-        self._send_btn.setIcon(resource.ResourceManager().icon('message'))
+        self._send_btn.setIcon(tp.ResourcesMgr().icon('message'))
         self._send_btn.setEnabled(False)
 
         self.main_layout.addWidget(self._title_line)
