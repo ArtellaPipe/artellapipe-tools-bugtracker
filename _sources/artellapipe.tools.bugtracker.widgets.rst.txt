@@ -1,0 +1,17 @@
+artellapipe.tools.bugtracker.widgets package
+============================================
+
+Submodules
+----------
+
+.. toctree::
+
+   artellapipe.tools.bugtracker.widgets.bugtracker
+
+Module contents
+---------------
+
+.. automodule:: artellapipe.tools.bugtracker.widgets
+   :members:
+   :undoc-members:
+   :show-inheritance:

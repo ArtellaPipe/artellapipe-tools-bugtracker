@@ -1,0 +1,7 @@
+artellapipe.tools.bugtracker.widgets.bugtracker module
+======================================================
+
+.. automodule:: artellapipe.tools.bugtracker.widgets.bugtracker
+   :members:
+   :undoc-members:
+   :show-inheritance:
