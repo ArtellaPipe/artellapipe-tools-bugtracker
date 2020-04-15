@@ -32,7 +32,7 @@ from Qt.QtWidgets import *
 
 import tpDcc as tp
 from tpDcc.libs.python import osplatform
-from tpDcc.libs.qt.widgets import splitters, stack
+from tpDcc.libs.qt.widgets import dividers, stack
 from tpDcc.libs.qt.core import base, qtutils
 
 import artellapipe
@@ -217,16 +217,16 @@ class BugWidget(base.BaseWidget, object):
         self._send_btn.setIcon(tp.ResourcesMgr().icon('bug'))
         self._send_btn.setEnabled(False)
 
-        self.main_layout.addWidget(splitters.Splitter('Bug Data'))
+        self.main_layout.addWidget(dividers.Divider('Bug Data'))
         self.main_layout.addWidget(bug_data_frame)
-        self.main_layout.addWidget(splitters.Splitter('Error Trace'))
+        self.main_layout.addWidget(dividers.Divider('Error Trace'))
         self.main_layout.addWidget(self._trace_text)
-        self.main_layout.addLayout(splitters.SplitterLayout())
+        self.main_layout.addLayout(dividers.DividerLayout())
         self.main_layout.addWidget(self._title_line)
         if qtutils.is_pyside():
             self.main_layout.addWidget(steps_lbl)
         self.main_layout.addWidget(self._steps_area)
-        self.main_layout.addLayout(splitters.SplitterLayout())
+        self.main_layout.addLayout(dividers.DividerLayout())
         self.main_layout.addWidget(self._send_btn)
 
         self._fill_bug_data()
