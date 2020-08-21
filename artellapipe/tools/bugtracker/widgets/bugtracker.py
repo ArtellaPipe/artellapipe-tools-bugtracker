@@ -41,7 +41,7 @@ from artellapipe.core import tool
 LOGGER = logging.getLogger()
 
 
-class ArtellaBugTracker(artellapipe.ToolWidget):
+class ArtellaBugTracker(tool.ArtellaToolWidget):
 
     BUG_TYPES = ['Bug', 'Request']
     ATTACHER_TYPE = tool.ToolAttacher.Dialog
@@ -712,7 +712,7 @@ class RequestWidget(base.BaseWidget, object):
         if qtutils.is_pyside():
             self.main_layout.addWidget(request_lbl)
         self.main_layout.addWidget(self._request_area)
-        self.main_layout.addLayout(splitters.SplitterLayout())
+        self.main_layout.addLayout(dividers.DividerLayout())
         self.main_layout.addWidget(self._send_btn)
 
     def setup_signals(self):
